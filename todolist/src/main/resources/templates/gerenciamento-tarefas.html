@@ -179,6 +179,18 @@
 </head>
 
 <body>
+
+    <!-- Exibe a mensagem de sucesso -->
+    <div th:if="${mensagemSucesso}" class="alert alert-success">
+        <p th:text="${mensagemSucesso}"></p>
+    </div>
+
+    <!-- Exibe a mensagem de erro -->
+    <div th:if="${mensagemErro}" class="alert alert-danger">
+        <p th:text="${mensagemErro}"></p>
+    </div>
+
+
     <h1>Gerenciamento de Tarefas</h1>
     <div class="container">
         <!-- Tarefas A Fazer -->
@@ -264,14 +276,16 @@
 
                 <label for="prioridade">Prioridade:</label>
                 <select id="prioridade" name="prioridade">
-                    <option value="Baixa">Baixa</option>
-                    <option value="Média">Média</option>
-                    <option value="Alta">Alta</option>
+                    <option value="BAIXA">Baixa</option>
+                    <option value="MEDIA">Média</option>
+                    <option value="ALTA">Alta</option>
                 </select>
 
                 <label for="usuario">Usuário:</label>
-                <input type="text" id="usuario" name="usuario" required>
-
+                <select id="usuario" name="usuario" required>
+                    <option value="" disabled selected>Selecione um usuário</option>
+                    <option th:each="usuario : ${usuarios}" th:value="${usuario.id}" th:text="${usuario.nome}"></option>
+                </select>
                 <button type="submit">Adicionar</button>
             </form>
         </div>

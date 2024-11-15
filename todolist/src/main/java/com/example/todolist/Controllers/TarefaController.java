@@ -76,12 +76,19 @@ public class TarefaController {
     }
 
     @PostMapping("/tarefas/mudar-status")
-    public String mudarStatus(@RequestParam Long id, @RequestParam Tarefa.Status novoStatus) {
+    public String mudarStatus(@RequestParam Long id, @RequestParam String novoStatus) {
         Tarefa tarefa = tarefaRepository.findById(id).orElse(null);
 
         if (tarefa != null) {
-            tarefa.setStatus(novoStatus);
-            tarefaRepository.save(tarefa); // Salva a tarefa com o novo status
+            // Converte a string para o enum Tarefa.Status
+            try {
+                Tarefa.Status status = Tarefa.Status.valueOf(novoStatus.toUpperCase());
+                tarefa.setStatus(status);
+                tarefaRepository.save(tarefa); // Salva a tarefa com o novo status
+            } catch (IllegalArgumentException e) {
+                // Retorna um erro caso o status seja inválido
+                return "redirect:/tarefas?error=status-invalido";
+            }
         }
 
         return "redirect:/tarefas"; // Redireciona de volta para a lista de tarefas
