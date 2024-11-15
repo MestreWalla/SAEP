@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Cadastrar Tarefa</title>
+</head>
+
+<body>
+    <h1>Cadastrar Tarefa</h1>
+    <form action="/tarefas/cadastro" method="post">
+        <label for="descricao">Descrição:</label>
+        <input type="text" id="descricao" name="descricao" required>
+
+        <label for="setor">Setor:</label>
+        <input type="text" id="setor" name="setor" required>
+
+        <label for="prioridade">Prioridade:</label>
+        <select id="prioridade" name="prioridade">
+            <option value="BAIXA">Baixa</option>
+            <option value="MEDIA">Média</option>
+            <option value="ALTA">Alta</option>
+        </select>
+
+        <label for="usuario">Usuário:</label>
+        <select id="usuario" name="usuario" required>
+            <option th:each="usuario : ${usuarios}" th:value="${usuario.id}" th:text="${usuario.nome}"></option>
+        </select>
+
+        <button type="submit">Adicionar Tarefa</button>
+    </form>
+
+    <div th:if="${param.success}">
+        <p>Tarefa cadastrada com sucesso!</p>
+    </div>
+</body>
+
+</html>

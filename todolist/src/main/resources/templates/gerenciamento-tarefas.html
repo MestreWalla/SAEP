@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Gerenciamento de Tarefas</title>
+    <style>
+        /* Configuração geral da página */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            background-color: #4CAF50;
+            color: white;
+            margin: 0;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .task-status {
+            margin-bottom: 30px;
+        }
+
+        .task-status h2 {
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Tarefa */
+        .task-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-item p {
+            flex-grow: 1;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .task-actions button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-left: 10px;
+        }
+
+        .task-actions button:hover {
+            background-color: #45a049;
+        }
+
+        .task-actions button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Estilo para as colunas */
+        .task-status {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .task-status>div {
+            flex: 0 0 32%;
+        }
+
+        /* Estilo para o botão flutuante */
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            height: 50px;
+            width: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FF4081;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s;
+        }
+
+        .floating-btn:hover {
+            background-color: #e40063;
+        }
+
+        /* Estilo do pop-up */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .popup-content h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .popup-content input,
+        .popup-content select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .popup-content button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .popup-content button:hover {
+            background-color: #45a049;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            border: none;
+            font-size: 20px;
+            color: #333;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Gerenciamento de Tarefas</h1>
+    <div class="container">
+        <!-- Tarefas A Fazer -->
+        <div class="task-status">
+            <div>
+                <h2>A Fazer</h2>
+                <div th:each="tarefa : ${tarefasAFazer}">
+                    <div class="task-item">
+                        <p th:text="${tarefa.descricao}"></p>
+                        <p th:text="'Usuário: ' + ${tarefa.usuario.nome}"></p>
+                        <p th:text="'Prioridade: ' + ${tarefa.prioridade}"></p>
+                        <form action="/tarefas/mudar-status" method="post">
+                            <input type="hidden" name="id" th:value="${tarefa.id}" />
+                            <select name="novoStatus">
+                                <option value="FAZER" th:selected="${tarefa.status == 'FAZER'}">A Fazer</option>
+                                <option value="FAZENDO" th:selected="${tarefa.status == 'FAZENDO'}">Fazendo</option>
+                                <option value="PRONTO" th:selected="${tarefa.status == 'PRONTO'}">Pronto</option>
+                            </select>
+                            <button type="submit">Alterar Status</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarefas Fazendo -->
+            <div>
+                <h2>Fazendo</h2>
+                <div th:each="tarefa : ${tarefasFazendo}">
+                    <div class="task-item">
+                        <p th:text="${tarefa.descricao}"></p>
+                        <p th:text="'Usuário: ' + ${tarefa.usuario.nome}"></p>
+                        <p th:text="'Prioridade: ' + ${tarefa.prioridade}"></p>
+                        <form action="/tarefas/mudar-status" method="post">
+                            <input type="hidden" name="id" th:value="${tarefa.id}" />
+                            <select name="novoStatus">
+                                <option value="FAZER" th:selected="${tarefa.status == 'FAZER'}">A Fazer</option>
+                                <option value="FAZENDO" th:selected="${tarefa.status == 'FAZENDO'}">Fazendo</option>
+                                <option value="PRONTO" th:selected="${tarefa.status == 'PRONTO'}">Pronto</option>
+                            </select>
+                            <button type="submit">Alterar Status</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarefas Prontas -->
+            <div>
+                <h2>Pronto</h2>
+                <div th:each="tarefa : ${tarefasPronto}">
+                    <div class="task-item">
+                        <p th:text="${tarefa.descricao}"></p>
+                        <p th:text="'Usuário: ' + ${tarefa.usuario.nome}"></p>
+                        <p th:text="'Prioridade: ' + ${tarefa.prioridade}"></p>
+                        <form action="/tarefas/mudar-status" method="post">
+                            <input type="hidden" name="id" th:value="${tarefa.id}" />
+                            <select name="novoStatus">
+                                <option value="FAZER" th:selected="${tarefa.status == 'FAZER'}">A Fazer</option>
+                                <option value="FAZENDO" th:selected="${tarefa.status == 'FAZENDO'}">Fazendo</option>
+                                <option value="PRONTO" th:selected="${tarefa.status == 'PRONTO'}">Pronto</option>
+                            </select>
+                            <button type="submit">Alterar Status</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botão Flutuante -->
+    <button class="floating-btn" onclick="openPopup()">+</button>
+
+    <!-- Pop-up Formulário de Adição de Tarefa -->
+    <div class="popup" id="popup">
+        <div class="popup-content">
+            <button class="popup-close" onclick="closePopup()">×</button>
+            <h2>Adicionar Tarefa</h2>
+            <form action="/tarefas/cadastro" method="post">
+                <label for="descricao">Descrição:</label>
+                <input type="text" id="descricao" name="descricao" required>
+
+                <label for="setor">Setor:</label>
+                <input type="text" id="setor" name="setor" required>
+
+                <label for="prioridade">Prioridade:</label>
+                <select id="prioridade" name="prioridade">
+                    <option value="Baixa">Baixa</option>
+                    <option value="Média">Média</option>
+                    <option value="Alta">Alta</option>
+                </select>
+
+                <label for="usuario">Usuário:</label>
+                <input type="text" id="usuario" name="usuario" required>
+
+                <button type="submit">Adicionar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openPopup() {
+            document.getElementById('popup').style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
